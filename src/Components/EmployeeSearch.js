@@ -29,43 +29,83 @@ class EmployeeSearch extends React.Component {
 
     }
 
+    getDataFromApi = async (employeeName) => {
+        let api = `http://api.additivasia.io/api/v1/assignment/employees/${employeeName}`;
+        const res = await fetch(api);
+        const tempResult = await res.json()
+        const result = await tempResult;
+        return result;
+
+
+
+    }
+
+    updateState = (employeeName, data) => {
+        this.setState(prevState => {
+            let history = []
+            if (localStorage.getItem("history")) {
+                history = JSON.parse(localStorage.getItem("history"))["history"];
+            }
+            if (history.indexOf(employeeName) === -1) {
+
+                localStorage.setItem("history", JSON.stringify({ history: [...history, employeeName] }))
+            }
+            return {
+                redirect: !prevState.redirect,
+                isLoading: !prevState.isLoading,
+                data: data,
+                employeeName: employeeName
+            }
+        })
+    }
+
     handleSearch = () => {
         let employeeName = this.inputRef.current.value;
+        let data = [];
         if (employeeName.length > 0) {
-            let api = `http://api.additivasia.io/api/v1/assignment/employees/${employeeName}`;
             this.setState({ isLoading: !this.state.isLoading })
-            fetch(api).then((result) => result.json())
-                .then((result) => {
+            this.getDataFromApi(employeeName).then(res => {
+                this.inputRef.current.value = ""
+                if (_.isEmpty(res)) {
+                    alert("No Result Were Found")
+                    this.setState(prevState => {
+                        return {
+                            isLoading: !prevState.isLoading,
+                        }
+                    })
+                } else {
+                    if (res.length === 1) {
 
-                    this.inputRef.current.value = ""
-                    if (_.isEmpty(result)) {
-                        alert("No Result Were Found")
-                        this.setState(prevState => {
-                            return {
-                                isLoading: !prevState.isLoading,
-                            }
-                        })
+
+                        this.updateState(employeeName, data)
                     } else {
-                        this.setState(prevState => {
-                            let history = []
-                            if (localStorage.getItem("history")) {
-                                history = JSON.parse(localStorage.getItem("history"))["history"];
-                            }
-                            if (history.indexOf(employeeName) === -1) {
+                        let nonDirectSub = res[1]["direct-subordinates"];
+                        data = [...data, ...nonDirectSub];
+                        nonDirectSub.forEach((e, i) => {
+                            this.getDataFromApi(e).then((res) => {
+                                if (res.length === 1) {
+                                    data = [...data]
 
-                                localStorage.setItem("history", JSON.stringify({ history: [...history, employeeName] }))
-                            }
-                            return {
-                                redirect: !prevState.redirect,
-                                isLoading: !prevState.isLoading,
-                                data: result,
-                                employeeName: employeeName
-                            }
+                                    if (i === nonDirectSub.length - 1) {
+                                        this.updateState(employeeName, data)
+                                    }
+                                } else {
+                                    let nonDirectSubData = res[1]["direct-subordinates"];
+                                    data = [...data, ...nonDirectSubData]
+
+                                    if (i === nonDirectSub.length - 1) {
+                                        this.updateState(employeeName, data)
+                                    }
+                                }
+                            })
                         })
+
+
                     }
 
-                })
-                .catch((e) => { console.log(e) })
+                }
+
+            })
         } else {
             alert("Please enter a valid employee name")
         }

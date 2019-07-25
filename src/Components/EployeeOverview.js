@@ -16,7 +16,7 @@ class EmployeeSearch extends React.Component {
     }
     render() {
         const { employeeName, data } = this.props.location;
-
+        const tempData = [...new Set(data)]
         if (this.state.redirect === true) {
             return <Redirect to="/" />;
         }
@@ -29,13 +29,13 @@ class EmployeeSearch extends React.Component {
                 <div>
 
                     {
-                        data && data.length === 1 ? <p><b>{employeeName} </b> has no subordinates</p> :
+                        tempData && tempData.length === 0 ? <p><b>{employeeName} </b> has no subordinates</p> :
                             <p>Subordinates of employee <b>{employeeName}</b></p>
                     }
                     <ListGroup>
                         {
-                            data && data.length > 1 && data[1]["direct-subordinates"] ?
-                                data[1]["direct-subordinates"].map((e) => <ListGroup.Item key={Math.random()}>{e}</ListGroup.Item>)
+                            tempData && tempData.length > 0 ?
+                                tempData.map((e) => <ListGroup.Item key={Math.random()}>{e}</ListGroup.Item>)
                                 : null
 
 
