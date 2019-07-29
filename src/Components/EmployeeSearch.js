@@ -35,9 +35,6 @@ class EmployeeSearch extends React.Component {
         const tempResult = await res.json()
         const result = await tempResult;
         return result;
-
-
-
     }
 
     updateState = (employeeName, data) => {
@@ -75,8 +72,6 @@ class EmployeeSearch extends React.Component {
                     })
                 } else {
                     if (res.length === 1) {
-
-
                         this.updateState(employeeName, data)
                     } else {
                         let nonDirectSub = res[1]["direct-subordinates"];
@@ -84,8 +79,6 @@ class EmployeeSearch extends React.Component {
                         nonDirectSub.forEach((e, i) => {
                             this.getDataFromApi(e).then((res) => {
                                 if (res.length === 1) {
-                                    data = [...data]
-
                                     if (i === nonDirectSub.length - 1) {
                                         this.updateState(employeeName, data)
                                     }
@@ -93,9 +86,28 @@ class EmployeeSearch extends React.Component {
                                     let nonDirectSubData = res[1]["direct-subordinates"];
                                     data = [...data, ...nonDirectSubData]
 
-                                    if (i === nonDirectSub.length - 1) {
-                                        this.updateState(employeeName, data)
-                                    }
+                                    nonDirectSubData.forEach((e, j) => {
+                                        this.getDataFromApi(e).then((res) => {
+                                            if (res.length === 1) {
+                                                if (j === nonDirectSubData.length - 1) {
+                                                    if (i === nonDirectSub.length - 1) {
+                                                        this.updateState(employeeName, data)
+                                                    }
+                                                }
+                                            } else {
+                                                let nonNonDirectSubData = res[1]["direct-subordinates"];
+                                                data = [...data, ...nonNonDirectSubData]
+
+                                                if (j === nonDirectSubData.length - 1) {
+                                                    if (i === nonDirectSub.length - 1) {
+                                                        this.updateState(employeeName, data)
+                                                    }
+                                                }
+                                            }
+                                        })
+                                    })
+
+
                                 }
                             })
                         })

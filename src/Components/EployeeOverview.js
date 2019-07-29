@@ -32,10 +32,10 @@ class EmployeeSearch extends React.Component {
                         tempData && tempData.length === 0 ? <p><b>{employeeName} </b> has no subordinates</p> :
                             <p>Subordinates of employee <b>{employeeName}</b></p>
                     }
-                    <ListGroup>
+                    <ListGroup >
                         {
                             tempData && tempData.length > 0 ?
-                                tempData.map((e) => <ListGroup.Item key={Math.random()}>{e}</ListGroup.Item>)
+                                tempData.map((e) => <ListGroup.Item variant={"primary"} key={Math.random()}>{e}</ListGroup.Item>)
                                 : null
 
 
